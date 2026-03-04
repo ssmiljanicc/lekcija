@@ -1,5 +1,38 @@
 #!/usr/bin/env python3
-"""lekcija - Generate structured lessons from video transcripts or notes."""
+"""
+lekcija.py  –  Generisanje strukturiranih lekcija iz video-transkripata ili beleški.
+
+═══════════════════════════════════════════════════════════════
+ GĐDE SE POKREĆE
+   Uvek iz korena projekta (folder gde se nalazi ovaj fajl):
+
+       cd /Users/ssmiljanic/projekti/lekcija
+       python3 lekcija.py <ulazni_fajl_ili_folder>
+
+ ULAZNI FAJLOVI (.md ili .txt)
+   Smesti fajlove koje hoćeš da obradiš u:
+
+       input/shards/     ← transkriti razbijeni po delovima (najčešće)
+       input/            ← ili direktno u input/
+
+   Primer pokretanja na jednom fajlu:
+       python3 lekcija.py "input/shards/deo 2-code review agent swarm.md"
+
+   Primer pokretanja na celom folderu:
+       python3 lekcija.py input/shards/
+
+ IZLAZ
+   Generisane lekcije se upisuju u:
+
+       output/           ← .md fajlovi sa generisanim lekcijama
+
+   Zatim pokreni export.py da dobiješ .docx:
+       python3 export.py
+
+ KONFIGURACIJA
+   API ključ i model se čitaju iz .env fajla (GEMINI_API_KEY, LEKCIJA_MODEL).
+═══════════════════════════════════════════════════════════════
+"""
 
 import argparse
 import json
@@ -288,9 +321,11 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Load config
+    # ── Konfiguracija ────────────────────────────────────────────
+    # Učitaj .env iz korena projekta (GEMINI_API_KEY, LEKCIJA_MODEL)
     load_env()
     model = args.model or os.environ.get("LEKCIJA_MODEL", DEFAULT_MODEL)
+    # Izlazni folder: default je ./output (ili LEKCIJA_OUTPUT_DIR iz .env)
     output_dir = args.output or os.environ.get("LEKCIJA_OUTPUT_DIR", "./output")
 
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -305,7 +340,8 @@ def main() -> None:
     # Configure Gemini
     genai.configure(api_key=api_key)
 
-    # Collect input files
+    # ── Prikupljanje ulaznih fajlova ─────────────────────────────
+    # Prosleđuješ putanju do fajla ILI do foldera (npr. input/shards/)
     input_path = Path(args.input_path)
     if input_path.is_dir():
         input_files = sorted(input_path.glob("*.md"))
@@ -314,11 +350,11 @@ def main() -> None:
         if not input_files:
             print(f"Error: No .md or .txt files found in {input_path}", file=sys.stderr)
             sys.exit(1)
-        print(f"Found {len(input_files)} files in {input_path}")
+        print(f"Pronađeno {len(input_files)} fajlova u {input_path}")
     elif input_path.is_file():
         input_files = [input_path]
     else:
-        print(f"Error: Path not found: {input_path}", file=sys.stderr)
+        print(f"Error: Putanja ne postoji: {input_path}", file=sys.stderr)
         sys.exit(1)
 
     all_written = []
@@ -384,11 +420,12 @@ def main() -> None:
             import time
             time.sleep(5)
 
-    # Summary
+    # ── Rezime rezultata ─────────────────────────────────────────
     if all_written:
-        print(f"\nDone. Output written to:")
+        print(f"\n✓ Gotovo. Lekcije su upisane u:")
         for f in all_written:
             print(f"  {f}")
+        print(f"\nSledeći korak: python3 export.py   →  konvertuj u .docx (u docs/folder)")
 
 
 if __name__ == "__main__":

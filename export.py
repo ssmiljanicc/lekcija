@@ -1,12 +1,36 @@
 #!/usr/bin/env python3
 """
-export.py - Konvertuje lekcije iz markdown u Word (.docx) format.
-Opciono dodaje rezime i zaključke ako ih nema.
+export.py  –  Konverzija generisanih lekcija iz Markdown u Word (.docx) format.
 
-Upotreba:
-    python3 export.py                        # sve iz output/ u docs/
-    python3 export.py output/neka-lekcija.md # jedan fajl
-    python3 export.py --add-summary          # dodaje rezime i zaključke u md fajlove
+═══════════════════════════════════════════════════════════════
+ GĐDE SE POKREĆE
+   Uvek iz korena projekta (folder gde se nalazi ovaj fajl):
+
+       cd /Users/ssmiljanic/projekti/lekcija
+       python3 export.py
+
+ ULAZ — ODAKLE ČITA
+   Čita .md fajlove iz foldera:
+
+       output/           ← lekcije koje je generisao lekcija.py
+
+   Ili prosleđuješ konkretan fajl:
+       python3 export.py output/neka-lekcija.md
+
+ IZLAZ — GDE UPISUJE
+   .docx fajlovi se upisuju u:
+
+       docs/             ← Word dokumenti, jedan po lekciji
+
+ TIPIČAN REDOSLED KORAKA
+   1.  python3 lekcija.py "input/shards/<fajl.md>"   # generiši lekciju → output/
+   2.  python3 export.py                              # konvertuj → docs/
+   3.  (opciono) python3 synthesize.py               # sintetiziraj sve lekcije
+
+ OPCIJE
+   --add-summary   Dodaj rezime u .md fajlove koji ga nemaju (bez API poziva)
+   --md-only       Samo dodaj rezime, ne konvertuj u .docx
+═══════════════════════════════════════════════════════════════
 """
 
 import argparse
