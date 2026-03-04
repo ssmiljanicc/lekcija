@@ -19,27 +19,34 @@ def count_branches():
             capture_output=True, text=True, check=True
         )
     except subprocess.CalledProcessError as e:
-        print(f"Error: Not a git repo or git failed: {e.stderr.strip()}")
+        print(f"Error: Not a git repo or git failed: {e.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
     except FileNotFoundError:
-        print("Error: git is not installed or not found on PATH.")
+        print("Error: git is not installed or not found on PATH.", file=sys.stderr)
         sys.exit(1)
 
-    branches = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    local = [b for b in branches if not b.startswith("remotes/")]
-    remote = [b for b in branches if b.startswith("remotes/")]
+    local = []
+    remote = []
+    for line in result.stdout.splitlines():
+        b = line.strip()
+        if not b:
+            continue
+        if b.startswith("remotes/"):
+            remote.append(b)
+        else:
+            local.append(b)
 
     print(f"Local branches:  {len(local)}")
     for b in local:
         # git branch -a prefixes the current branch with '* '
         marker = "* " if b.startswith("*") else "  "
-        print(f"  {marker}{b.lstrip('* ')}")
+        print(f"  {marker}{b.removeprefix('* ')}")
 
     print(f"\nRemote branches: {len(remote)}")
     for b in remote:
-        print(f"    {b[len('remotes/'):] if b.startswith('remotes/') else b}")
+        print(f"    {b.removeprefix('remotes/')}")
 
-    print(f"\nTotal: {len(branches)} branches")
+    print(f"\nTotal: {len(local) + len(remote)} branches")
 
 
 if __name__ == "__main__":
